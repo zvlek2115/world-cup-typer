@@ -128,6 +128,13 @@ const Dashboard = () => {
               Grupy
             </Link>
             <Link 
+              to="/individual"
+              className="flex items-center bg-orange-600 hover:bg-orange-700 text-white px-3 py-2 rounded-md transition-colors font-semibold text-sm"
+            >
+              <Trophy className="w-4 h-4 mr-2" />
+              Indywidualne
+            </Link>
+            <Link 
               to="/all-predictions"
               className="flex items-center bg-purple-600 hover:bg-purple-700 text-white px-3 py-2 rounded-md transition-colors font-semibold text-sm"
             >

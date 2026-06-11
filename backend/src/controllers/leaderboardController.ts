@@ -17,16 +17,26 @@ export const getLeaderboard = async (req: Request, res: Response) => {
             pointsEarned: true,
           },
         },
+        individualPredictions: {
+          select: {
+            winnerPoints: true,
+            mvpPoints: true,
+            topScorerPoints: true,
+          },
+        },
       },
     });
 
     const leaderboard = users.map(user => {
       const matchPoints = user.predictions.reduce((acc: number, pred: any) => acc + (pred.pointsEarned || 0), 0);
       const groupPoints = (user as any).groupPredictions.reduce((acc: number, pred: any) => acc + (pred.pointsEarned || 0), 0);
+      const indivPred = (user as any).individualPredictions[0] || {};
+      const individualPoints = (indivPred.winnerPoints || 0) + (indivPred.mvpPoints || 0) + (indivPred.topScorerPoints || 0);
+
       return {
         id: user.id,
         username: user.username,
-        totalPoints: matchPoints + groupPoints,
+        totalPoints: matchPoints + groupPoints + individualPoints,
       };
     }).sort((a, b) => b.totalPoints - a.totalPoints);
 

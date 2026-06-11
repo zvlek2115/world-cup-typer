@@ -9,6 +9,7 @@ import AdminPanel from './pages/AdminPanel';
 import Groups from './pages/Groups';
 import GroupPredictions from './pages/GroupPredictions';
 import OthersGroupPredictions from './pages/OthersGroupPredictions';
+import IndividualPredictions from './pages/IndividualPredictions';
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { token, loading } = useAuth();
@@ -78,6 +79,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <OthersGroupPredictions />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/individual" 
+            element={
+              <ProtectedRoute>
+                <IndividualPredictions />
               </ProtectedRoute>
             } 
           />

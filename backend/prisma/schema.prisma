@@ -21,12 +21,13 @@ enum MatchStatus {
 }
 
 model User {
-  id               String            @id @default(uuid())
-  username         String            @unique
-  passwordHash     String
-  role             Role              @default(USER)
-  predictions      Prediction[]
-  groupPredictions GroupPrediction[]
+  id                    String                 @id @default(uuid())
+  username              String                 @unique
+  passwordHash          String
+  role                  Role                   @default(USER)
+  predictions           Prediction[]
+  groupPredictions      GroupPrediction[]
+  individualPredictions IndividualPrediction[]
 }
 
 model Match {
@@ -72,4 +73,17 @@ model GroupPrediction {
   user User @relation(fields: [userId], references: [id])
 
   @@unique([userId, groupName, teamName])
+}
+
+model IndividualPrediction {
+  id              String  @id @default(uuid())
+  userId          String  @unique
+  winner          String?
+  mvp             String?
+  topScorer       String?
+  winnerPoints    Int?
+  mvpPoints       Int?
+  topScorerPoints Int?
+
+  user User @relation(fields: [userId], references: [id])
 }

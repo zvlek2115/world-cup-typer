@@ -32,7 +32,10 @@ const AdminPanel = () => {
   const [savingGroup, setSavingGroup] = useState<string | null>(null);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'matches' | 'groups'>('matches');
+  const [activeTab, setActiveTab] = useState<'matches' | 'groups' | 'individual'>('matches');
+  const [individualResults, setIndividualResults] = useState({ winner: '', mvp: '', topScorer: '' });
+  const [savingIndiv, setSavingIndiv] = useState(false);
+  const [teamsList, setTeamsList] = useState<any[]>([]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -58,6 +61,10 @@ const AdminPanel = () => {
         setEditingScores(initialScores);
 
         setGroups(groupsRes.data);
+        const allTeams: any[] = [];
+        Object.values(groupsRes.data as Record<string, Team[]>).forEach((gTeams) => allTeams.push(...gTeams));
+        setTeamsList(allTeams.sort((a, b) => a.name.localeCompare(b.name)));
+
         const initialGroupResults: Record<string, Record<string, string>> = {};
         Object.entries(groupsRes.data as Record<string, Team[]>).forEach(([gName, teams]) => {
           initialGroupResults[gName] = {};
@@ -101,48 +108,19 @@ const AdminPanel = () => {
     }));
   };
 
-  const handleUpdateResult = async (matchId: string) => {
-    const edit = editingScores[matchId];
-    setSaving(matchId);
+  const handleUpdateIndividualResults = async () => {
+    setSavingIndiv(true);
     setError('');
     setSuccess(null);
 
     try {
-      await api.put(`/matches/${matchId}`, {
-        homeScore: edit.home === '' ? null : parseInt(edit.home),
-        awayScore: edit.away === '' ? null : parseInt(edit.away),
-        status: edit.status
-      });
-      setSuccess(matchId);
+      await api.put('/individual/result', individualResults);
+      setSuccess('individual');
       setTimeout(() => setSuccess(null), 3000);
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Błąd podczas aktualizacji wyniku');
+      setError(err.response?.data?.message || 'Błąd podczas aktualizacji typów indywidualnych');
     } finally {
-      setSaving(null);
-    }
-  };
-
-  const handleUpdateGroupResult = async (groupName: string) => {
-    const results = groupResults[groupName];
-    setSavingGroup(groupName);
-    setError('');
-    setSuccess(null);
-
-    try {
-      const formattedResults: Record<string, number> = {};
-      for (const team in results) {
-        if (results[team] !== '') {
-          formattedResults[team] = parseInt(results[team]);
-        }
-      }
-
-      await api.put('/groups/result', { groupName, results: formattedResults });
-      setSuccess(`group-${groupName}`);
-      setTimeout(() => setSuccess(null), 3000);
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Błąd podczas aktualizacji grupy');
-    } finally {
-      setSavingGroup(null);
+      setSavingIndiv(false);
     }
   };
 
@@ -176,6 +154,14 @@ const AdminPanel = () => {
             }`}
           >
             Grupy
+          </button>
+          <button
+            onClick={() => setActiveTab('individual')}
+            className={`px-6 py-2 rounded-md font-bold transition-all ${
+              activeTab === 'individual' ? 'bg-red-600 text-white' : 'bg-slate-800 text-slate-400 hover:bg-slate-700'
+            }`}
+          >
+            Indywidualne
           </button>
         </div>
 
@@ -275,8 +261,108 @@ const AdminPanel = () => {
               </div>
             )}
           </div>
-        ) : (
+        ) : activeTab === 'groups' ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {Object.keys(groups).sort().map((gName) => {
+              const isSaving = savingGroup === gName;
+              const isSuccess = success === `group-${gName}`;
+              
+              return (
+                <div key={gName} className="bg-slate-800 rounded-lg border border-slate-700 overflow-hidden shadow-lg">
+                  <div className="bg-slate-700 p-3 flex justify-between items-center">
+                    <h3 className="font-bold flex items-center">
+                      <ListChecks className="w-4 h-4 mr-2 text-red-500" />
+                      GRUPA {gName}
+                    </h3>
+                    <button
+                      onClick={() => handleUpdateGroupResult(gName)}
+                      disabled={isSaving}
+                      className={`px-3 py-1 rounded text-xs font-bold transition-all ${
+                        isSuccess ? 'bg-green-600' : 'bg-red-600 hover:bg-red-700'
+                      }`}
+                    >
+                      {isSaving ? 'Zapisywanie...' : isSuccess ? 'Zapisano!' : 'Zapisz Wynik Grupy'}
+                    </button>
+                  </div>
+                  <div className="p-4 space-y-3">
+                    {groups[gName].map((team) => (
+                      <div key={team.id} className="flex items-center justify-between">
+                        <span className="text-sm font-semibold">{team.name}</span>
+                        <div className="flex items-center space-x-2">
+                          <span className="text-[10px] text-slate-500 uppercase font-bold">Miejsce:</span>
+                          <select
+                            value={groupResults[gName]?.[team.name] || ''}
+                            onChange={(e) => handleGroupResultChange(gName, team.name, e.target.value)}
+                            className="bg-slate-900 border border-slate-600 rounded px-2 py-1 text-xs font-bold focus:border-red-500 outline-none w-16"
+                          >
+                            <option value="">?</option>
+                            <option value="1">1</option>
+                            <option value="2">2</option>
+                            <option value="3">3</option>
+                            <option value="4">4</option>
+                          </select>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <div className="max-w-xl mx-auto bg-slate-800 rounded-xl p-6 border border-slate-700 shadow-xl space-y-6">
+            <h3 className="text-xl font-bold border-b border-slate-700 pb-3 italic text-red-400">Oficjalne Wyniki Turnieju</h3>
+            
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-sm font-black text-yellow-500 uppercase tracking-widest">Zwycięzca Turnieju (10 PKT)</label>
+                <select
+                  value={individualResults.winner}
+                  onChange={(e) => setIndividualResults({...individualResults, winner: e.target.value})}
+                  className="w-full bg-slate-900 border border-slate-600 rounded p-3 text-lg font-bold focus:border-red-500 outline-none"
+                >
+                  <option value="">Wybierz zwycięzcę...</option>
+                  {teamsList.map(t => <option key={t.id} value={t.name}>{t.name}</option>)}
+                </select>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-black text-blue-500 uppercase tracking-widest">Najlepszy Zawodnik / MVP (5 PKT)</label>
+                <input
+                  type="text"
+                  placeholder="Imię i nazwisko piłkarza..."
+                  value={individualResults.mvp}
+                  onChange={(e) => setIndividualResults({...individualResults, mvp: e.target.value})}
+                  className="w-full bg-slate-900 border border-slate-600 rounded p-3 text-lg focus:border-red-500 outline-none"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-black text-green-500 uppercase tracking-widest">Król Strzelców (5 PKT)</label>
+                <input
+                  type="text"
+                  placeholder="Imię i nazwisko piłkarza..."
+                  value={individualResults.topScorer}
+                  onChange={(e) => setIndividualResults({...individualResults, topScorer: e.target.value})}
+                  className="w-full bg-slate-900 border border-slate-600 rounded p-3 text-lg focus:border-red-500 outline-none"
+                />
+              </div>
+
+              <button
+                onClick={handleUpdateIndividualResults}
+                disabled={savingIndiv}
+                className={`w-full py-4 rounded-lg font-black text-xl transition-all mt-6 shadow-2xl ${
+                  success === 'individual' ? 'bg-green-600 shadow-green-500/20' : 'bg-red-600 hover:bg-red-700 shadow-red-500/20'
+                }`}
+              >
+                {savingIndiv ? 'ROZLICZANIE...' : success === 'individual' ? 'ROZLICZONO!' : 'ROZLICZ INDYWIDUALNE'}
+              </button>
+              <p className="text-[10px] text-slate-500 italic text-center uppercase font-bold tracking-tighter">
+                UWAGA: TYLKO DLA ZYLEK. ROZLICZASZ CAŁY TURNIEJ NA RAZ.
+              </p>
+            </div>
+          </div>
+        )}
             {Object.keys(groups).sort().map((gName) => {
               const isSaving = savingGroup === gName;
               const isSuccess = success === `group-${gName}`;

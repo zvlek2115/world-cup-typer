@@ -20,7 +20,7 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
   return <>{children}</>;
 };
 
-// Final production build trigger
+// Correct API URL deployment trigger
 function App() {
   return (
     <AuthProvider>

@@ -1,4 +1,5 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, Role } from '@prisma/client';
+import bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
 
@@ -6,6 +7,35 @@ async function main() {
   // Clear all matches and predictions to start fresh with accurate data
   await prisma.prediction.deleteMany({});
   await prisma.match.deleteMany({});
+
+  // Ensure admin user exists
+  const adminUsername = 'zylek';
+  const adminPassword = 'zylek';
+  const hashedPassword = await bcrypt.hash(adminPassword, 10);
+
+  const existingAdmin = await prisma.user.findUnique({
+    where: { username: adminUsername }
+  });
+
+  if (!existingAdmin) {
+    console.log(`Creating admin user: ${adminUsername}`);
+    await prisma.user.create({
+      data: {
+        username: adminUsername,
+        passwordHash: hashedPassword,
+        role: Role.ADMIN
+      }
+    });
+  } else {
+    console.log(`Updating existing user ${adminUsername} to ADMIN role`);
+    await prisma.user.update({
+      where: { username: adminUsername },
+      data: { 
+        passwordHash: hashedPassword,
+        role: Role.ADMIN 
+      }
+    });
+  }
 
   const matches = [
     { "homeTeam": "Meksyk", "awayTeam": "RPA", "startTime": new Date("2026-06-11T19:00:00Z") },

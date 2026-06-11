@@ -1,0 +1,10 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const predictionController_1 = require("../controllers/predictionController");
+const authMiddleware_1 = require("../middleware/authMiddleware");
+const router = (0, express_1.Router)();
+router.use(authMiddleware_1.authenticateJWT);
+router.get('/me', predictionController_1.getMyPredictions);
+router.post('/', predictionController_1.upsertPrediction);
+exports.default = router;

@@ -1,4 +1,3 @@
-import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import Login from './pages/Login';
@@ -7,6 +6,7 @@ import Leaderboard from './pages/Leaderboard';
 import MyPredictions from './pages/MyPredictions';
 import OthersPredictions from './pages/OthersPredictions';
 import AdminPanel from './pages/AdminPanel';
+import GroupPredictions from './pages/GroupPredictions';
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { token, loading } = useAuth();
@@ -52,6 +52,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <OthersPredictions />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/groups" 
+            element={
+              <ProtectedRoute>
+                <GroupPredictions />
               </ProtectedRoute>
             } 
           />

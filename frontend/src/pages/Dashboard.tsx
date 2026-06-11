@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../api/client';
 import { useAuth } from '../context/AuthContext';
-import { Trophy, History, Users, Settings } from 'lucide-react';
+import { Trophy, History, Users, Settings, ListChecks } from 'lucide-react';
 
 interface Match {
   id: string;
@@ -120,6 +120,13 @@ const Dashboard = () => {
                 Panel Admina
               </Link>
             )}
+            <Link 
+              to="/groups"
+              className="flex items-center bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded-md transition-colors font-semibold text-sm"
+            >
+              <ListChecks className="w-4 h-4 mr-2" />
+              Typuj Grupy
+            </Link>
             <Link 
               to="/all-predictions"
               className="flex items-center bg-purple-600 hover:bg-purple-700 text-white px-3 py-2 rounded-md transition-colors font-semibold text-sm"

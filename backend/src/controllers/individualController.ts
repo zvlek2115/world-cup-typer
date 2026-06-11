@@ -45,7 +45,18 @@ export const getAllIndividualPredictions = async (req: AuthRequest, res: Respons
         }
       }
     });
-    res.json(predictions);
+
+    const formatted = predictions.map((p: any) => ({
+      username: p.user.username,
+      winner: p.winner,
+      mvp: p.mvp,
+      topScorer: p.topScorer,
+      winnerPoints: p.winnerPoints,
+      mvpPoints: p.mvpPoints,
+      topScorerPoints: p.topScorerPoints
+    }));
+
+    res.json(formatted);
   } catch (error) {
     res.status(500).json({ message: 'Error fetching all individual predictions' });
   }

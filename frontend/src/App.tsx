@@ -10,6 +10,7 @@ import Groups from './pages/Groups';
 import GroupPredictions from './pages/GroupPredictions';
 import OthersGroupPredictions from './pages/OthersGroupPredictions';
 import IndividualPredictions from './pages/IndividualPredictions';
+import OthersIndividualPredictions from './pages/OthersIndividualPredictions';
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { token, loading } = useAuth();
@@ -88,6 +89,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <IndividualPredictions />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/individual/all-predictions" 
+            element={
+              <ProtectedRoute>
+                <OthersIndividualPredictions />
               </ProtectedRoute>
             } 
           />

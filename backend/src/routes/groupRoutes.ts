@@ -4,7 +4,8 @@ import {
   getMyGroupPredictions, 
   saveGroupPredictions, 
   updateGroupResult,
-  getGroupStandings
+  getGroupStandings,
+  getAllGroupPredictions
 } from '../controllers/groupController';
 import { authenticateJWT } from '../middleware/authMiddleware';
 

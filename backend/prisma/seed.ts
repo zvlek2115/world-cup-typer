@@ -4,9 +4,14 @@ import bcrypt from 'bcryptjs';
 const prisma = new PrismaClient();
 
 async function main() {
-  // Clear all matches and predictions to start fresh with accurate data
+  console.log('Starting seed: clearing existing data...');
+  // Order of deletion matters due to relations
+  await (prisma as any).individualPrediction.deleteMany({});
+  await (prisma as any).groupPrediction.deleteMany({});
   await prisma.prediction.deleteMany({});
   await prisma.match.deleteMany({});
+  await (prisma as any).team.deleteMany({});
+  console.log('Existing data cleared.');
 
   // Ensure admin user exists
   const adminUsername = 'zylek';

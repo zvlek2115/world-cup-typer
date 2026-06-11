@@ -6,6 +6,7 @@ import authRoutes from './routes/authRoutes';
 import matchRoutes from './routes/matchRoutes';
 import predictionRoutes from './routes/predictionRoutes';
 import leaderboardRoutes from './routes/leaderboardRoutes';
+import groupRoutes from './routes/groupRoutes';
 
 dotenv.config();
 
@@ -19,6 +20,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/matches', matchRoutes);
 app.use('/api/predictions', predictionRoutes);
 app.use('/api/leaderboard', leaderboardRoutes);
+app.use('/api/groups', groupRoutes);
 
 // Basic health check
 app.get('/health', (req, res) => {

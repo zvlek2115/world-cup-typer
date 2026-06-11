@@ -20,7 +20,7 @@ interface Prediction {
 }
 
 const GroupPredictions = () => {
-  const { user } = useAuth();
+  const { } = useAuth();
   const [groups, setGroups] = useState<Record<string, Team[]>>({});
   const [predictions, setPredictions] = useState<Record<string, number>>({}); // key: teamName, value: rank
   const [loading, setLoading] = useState(true);

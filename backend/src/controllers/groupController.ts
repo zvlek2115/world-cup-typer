@@ -39,6 +39,12 @@ export const saveGroupPredictions = async (req: AuthRequest, res: Response) => {
 
   try {
     const userId = req.user!.userId;
+    
+    // Deadline: 13.06.2026 14:00 PL time is 12:00 UTC
+    const deadline = new Date("2026-06-13T12:00:00Z");
+    if (new Date() > deadline) {
+      return res.status(400).json({ message: 'Typowanie grup zostało zakończone (termin minął 13.06 14:00)' });
+    }
 
     for (const pred of predictions) {
       await (prisma as any).groupPrediction.upsert({

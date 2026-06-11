@@ -145,6 +145,7 @@ const GroupPredictions = () => {
   }
 
   const groupNames = Object.keys(groups).sort();
+  const isDeadlinePassed = new Date() > new Date("2026-06-13T12:00:00Z");
 
   return (
     <div className="min-h-screen bg-slate-900 text-white p-4 md:p-8 pb-24">
@@ -160,11 +161,13 @@ const GroupPredictions = () => {
           </div>
           <button
             onClick={handleSave}
-            disabled={saving}
+            disabled={saving || isDeadlinePassed}
             className={`flex items-center px-6 py-2 rounded-md font-bold transition-all ${
-              success 
-                ? 'bg-green-600 text-white' 
-                : 'bg-blue-600 hover:bg-blue-700 text-white shadow-lg'
+              isDeadlinePassed
+                ? 'bg-slate-700 text-slate-500 cursor-not-allowed'
+                : success 
+                  ? 'bg-green-600 text-white' 
+                  : 'bg-blue-600 hover:bg-blue-700 text-white shadow-lg'
             }`}
           >
             {saving ? (
@@ -174,13 +177,13 @@ const GroupPredictions = () => {
             ) : (
               <Save className="w-5 h-5 mr-2" />
             )}
-            {success ? 'Zapisano!' : 'Zapisz wszystkie typy'}
+            {isDeadlinePassed ? 'Typowanie zakończone' : success ? 'Zapisano!' : 'Zapisz wszystkie typy'}
           </button>
         </div>
 
-        {error && (
-          <div className="bg-red-500/20 border border-red-500 text-red-100 p-4 rounded-md mb-6">
-            {error}
+        {(error || isDeadlinePassed) && (
+          <div className={`p-4 rounded-md mb-6 border ${isDeadlinePassed && !error ? 'bg-orange-500/20 border-orange-500 text-orange-100' : 'bg-red-500/20 border-red-500 text-red-100'}`}>
+            {error || 'Termin obstawiania grup minął 13.06.2026 o godzinie 14:00.'}
           </div>
         )}
 
@@ -199,11 +202,14 @@ const GroupPredictions = () => {
                       {[1, 2, 3, 4].map(rank => (
                         <button
                           key={rank}
+                          disabled={isDeadlinePassed}
                           onClick={() => handleRankChange(team.name, rank)}
                           className={`w-8 h-8 rounded flex items-center justify-center text-xs font-black transition-all ${
                             predictions[team.name] === rank
                               ? 'bg-blue-600 text-white shadow-lg scale-110 z-10'
-                              : 'text-slate-500 hover:text-slate-300 hover:bg-slate-800'
+                              : isDeadlinePassed
+                                ? 'text-slate-700'
+                                : 'text-slate-500 hover:text-slate-300 hover:bg-slate-800'
                           }`}
                         >
                           {rank}
@@ -219,23 +225,25 @@ const GroupPredictions = () => {
       </div>
 
       {/* Floating Save Button for Mobile */}
-      <div className="fixed bottom-6 right-6 md:hidden">
-        <button
-          onClick={handleSave}
-          disabled={saving}
-          className={`p-4 rounded-full shadow-2xl transition-all ${
-            success ? 'bg-green-600' : 'bg-blue-600 active:scale-95'
-          }`}
-        >
-          {saving ? (
-            <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-          ) : success ? (
-            <CheckCircle2 className="w-6 h-6 text-white" />
-          ) : (
-            <Save className="w-6 h-6 text-white" />
-          )}
-        </button>
-      </div>
+      {!isDeadlinePassed && (
+        <div className="fixed bottom-6 right-6 md:hidden">
+          <button
+            onClick={handleSave}
+            disabled={saving}
+            className={`p-4 rounded-full shadow-2xl transition-all ${
+              success ? 'bg-green-600' : 'bg-blue-600 active:scale-95'
+            }`}
+          >
+            {saving ? (
+              <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+            ) : success ? (
+              <CheckCircle2 className="w-6 h-6 text-white" />
+            ) : (
+              <Save className="w-6 h-6 text-white" />
+            )}
+          </button>
+        </div>
+      )}
     </div>
   );
 };

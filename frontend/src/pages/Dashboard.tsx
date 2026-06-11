@@ -175,7 +175,10 @@ const Dashboard = () => {
               {matches
                 .filter(m => m.status === 'SCHEDULED')
                 .map((match) => {
-                const isMatchStarted = new Date() > new Date(match.startTime);
+                const now = new Date();
+                const matchStartTime = new Date(match.startTime);
+                const deadline = new Date(matchStartTime.getTime() + 2 * 60 * 1000);
+                const isMatchStarted = now > deadline;
                 const isSaving = saving === match.id;
                 const isSuccess = success === match.id;
                 const hasPrediction = !!predictions[match.id];

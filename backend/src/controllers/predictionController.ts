@@ -54,8 +54,11 @@ export const upsertPrediction = async (req: AuthRequest, res: Response) => {
       return res.status(404).json({ message: 'Match not found' });
     }
 
-    if (new Date() > new Date(match.startTime)) {
-      return res.status(400).json({ message: 'Match already started, cannot change prediction' });
+    const now = new Date();
+    const startTimePlus2Min = new Date(new Date(match.startTime).getTime() + 2 * 60 * 1000);
+
+    if (now > startTimePlus2Min) {
+      return res.status(400).json({ message: 'Typowanie zakończone (minęło ponad 2 minuty od startu meczu)' });
     }
 
     const prediction = await prisma.prediction.upsert({

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../api/client';
 import { useAuth } from '../context/AuthContext';
-import { Trophy, UserCircle, Target, ArrowLeft, Save, CheckCircle2, Info } from 'lucide-react';
+import { Trophy, UserCircle, Target, ArrowLeft, Save, CheckCircle2, Info, Users } from 'lucide-react';
 
 const IndividualPredictions = () => {
   const { } = useAuth();

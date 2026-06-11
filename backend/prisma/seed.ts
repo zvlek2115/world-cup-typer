@@ -4,14 +4,7 @@ import bcrypt from 'bcryptjs';
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log('Starting seed: clearing existing data...');
-  // Order of deletion matters due to relations
-  await (prisma as any).individualPrediction.deleteMany({});
-  await (prisma as any).groupPrediction.deleteMany({});
-  await prisma.prediction.deleteMany({});
-  await prisma.match.deleteMany({});
-  await (prisma as any).team.deleteMany({});
-  console.log('Existing data cleared.');
+  console.log('Starting seed: ensuring data stability...');
 
   // Ensure admin user exists
   const adminUsername = 'zylek';
@@ -36,11 +29,34 @@ async function main() {
     await prisma.user.update({
       where: { username: adminUsername },
       data: { 
-        passwordHash: hashedPassword,
         role: Role.ADMIN 
       }
     });
   }
+
+  const teams = [
+    { name: "Meksyk", groupName: "A" }, { name: "RPA", groupName: "A" }, { name: "Korea Południowa", groupName: "A" }, { name: "Czechy", groupName: "A" },
+    { name: "Kanada", groupName: "B" }, { name: "Bośnia i Hercegowina", groupName: "B" }, { name: "Katar", groupName: "B" }, { name: "Szwajcaria", groupName: "B" },
+    { name: "Brazylia", groupName: "C" }, { name: "Maroko", groupName: "C" }, { name: "Haiti", groupName: "C" }, { name: "Szkocja", groupName: "C" },
+    { name: "USA", groupName: "D" }, { name: "Paragwaj", groupName: "D" }, { name: "Australia", groupName: "D" }, { name: "Turcja", groupName: "D" },
+    { name: "Niemcy", groupName: "E" }, { name: "Curacao", groupName: "E" }, { name: "Wybrzeże Kości Słoniowej", groupName: "E" }, { name: "Ekwador", groupName: "E" },
+    { name: "Holandia", groupName: "F" }, { name: "Japonia", groupName: "F" }, { name: "Szwecja", groupName: "F" }, { name: "Tunezja", groupName: "F" },
+    { name: "Belgia", groupName: "G" }, { name: "Egipt", groupName: "G" }, { name: "Iran", groupName: "G" }, { name: "Nowa Zelandia", groupName: "G" },
+    { name: "Hiszpania", groupName: "H" }, { name: "Republika Zielonego Przylądka", groupName: "H" }, { name: "Arabia Saudyjska", groupName: "H" }, { name: "Urugwaj", groupName: "H" },
+    { name: "Francja", groupName: "I" }, { name: "Senegal", groupName: "I" }, { name: "Irak", groupName: "I" }, { name: "Norwegia", groupName: "I" },
+    { name: "Argentyna", groupName: "J" }, { name: "Algieria", groupName: "J" }, { name: "Austria", groupName: "J" }, { name: "Jordania", groupName: "J" },
+    { name: "Portugalia", groupName: "K" }, { name: "DR Konga", groupName: "K" }, { name: "Uzbekistan", groupName: "K" }, { name: "Kolumbia", groupName: "K" },
+    { name: "Anglia", groupName: "L" }, { name: "Chorwacja", groupName: "L" }, { name: "Ghana", groupName: "L" }, { name: "Panama", groupName: "L" }
+  ];
+
+  for (const team of teams) {
+    await (prisma as any).team.upsert({
+      where: { name: team.name },
+      update: { groupName: team.groupName },
+      create: team
+    });
+  }
+  console.log(`Seed: Synchronized ${teams.length} teams`);
 
   const matches = [
     { "homeTeam": "Meksyk", "awayTeam": "RPA", "startTime": new Date("2026-06-11T19:00:00Z") },
@@ -95,36 +111,23 @@ async function main() {
     { "homeTeam": "Bośnia i Hercegowina", "awayTeam": "Katar", "startTime": new Date("2026-06-24T19:00:00Z") }
   ];
 
-  console.log('Clearing and seeding matches and teams with real countries...');
-
-  const teams = [
-    { name: "Meksyk", groupName: "A" }, { name: "RPA", groupName: "A" }, { name: "Korea Południowa", groupName: "A" }, { name: "Czechy", groupName: "A" },
-    { name: "Kanada", groupName: "B" }, { name: "Bośnia i Hercegowina", groupName: "B" }, { name: "Katar", groupName: "B" }, { name: "Szwajcaria", groupName: "B" },
-    { name: "Brazylia", groupName: "C" }, { name: "Maroko", groupName: "C" }, { name: "Haiti", groupName: "C" }, { name: "Szkocja", groupName: "C" },
-    { name: "USA", groupName: "D" }, { name: "Paragwaj", groupName: "D" }, { name: "Australia", groupName: "D" }, { name: "Turcja", groupName: "D" },
-    { name: "Niemcy", groupName: "E" }, { name: "Curacao", groupName: "E" }, { name: "Wybrzeże Kości Słoniowej", groupName: "E" }, { name: "Ekwador", groupName: "E" },
-    { name: "Holandia", groupName: "F" }, { name: "Japonia", groupName: "F" }, { name: "Szwecja", groupName: "F" }, { name: "Tunezja", groupName: "F" },
-    { name: "Belgia", groupName: "G" }, { name: "Egipt", groupName: "G" }, { name: "Iran", groupName: "G" }, { name: "Nowa Zelandia", groupName: "G" },
-    { name: "Hiszpania", groupName: "H" }, { name: "Republika Zielonego Przylądka", groupName: "H" }, { name: "Arabia Saudyjska", groupName: "H" }, { name: "Urugwaj", groupName: "H" },
-    { name: "Francja", groupName: "I" }, { name: "Senegal", groupName: "I" }, { name: "Irak", groupName: "I" }, { name: "Norwegia", groupName: "I" },
-    { name: "Argentyna", groupName: "J" }, { name: "Algieria", groupName: "J" }, { name: "Austria", groupName: "J" }, { name: "Jordania", groupName: "J" },
-    { name: "Portugalia", groupName: "K" }, { name: "DR Konga", groupName: "K" }, { name: "Uzbekistan", groupName: "K" }, { name: "Kolumbia", groupName: "K" },
-    { name: "Anglia", groupName: "L" }, { name: "Chorwacja", groupName: "L" }, { name: "Ghana", groupName: "L" }, { name: "Panama", groupName: "L" }
-  ];
-
-  await prisma.team.deleteMany({});
-  for (const team of teams) {
-    await prisma.team.create({ data: team });
-  }
-  console.log(`Seed: Added ${teams.length} teams in 12 groups`);
-
-  for (const match of matches) {
-    await prisma.match.create({
-      data: match,
+  for (const matchData of matches) {
+    const existingMatch = await prisma.match.findFirst({
+      where: {
+        homeTeam: matchData.homeTeam,
+        awayTeam: matchData.awayTeam,
+        startTime: matchData.startTime
+      }
     });
+
+    if (!existingMatch) {
+      await prisma.match.create({
+        data: matchData
+      });
+    }
   }
 
-  console.log(`Seed completed: Added ${matches.length} real WC 2026 matches`);
+  console.log(`Seed: Matches synchronized. Existing data preserved.`);
 }
 
 main()

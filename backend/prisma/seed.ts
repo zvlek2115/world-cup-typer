@@ -94,17 +94,17 @@ async function main() {
 
   const teams = [
     { name: "Meksyk", groupName: "A" }, { name: "RPA", groupName: "A" }, { name: "Korea Południowa", groupName: "A" }, { name: "Czechy", groupName: "A" },
-    { name: "Kanada", groupName: "B" }, { name: "Bośnia i Hercegowina", groupName: "B" }, { name: "USA", groupName: "B" }, { name: "Paragwaj", groupName: "B" },
-    { name: "Katar", groupName: "C" }, { name: "Szwajcaria", groupName: "C" }, { name: "Brazylia", groupName: "C" }, { name: "Maroko", groupName: "C" },
-    { name: "Haiti", groupName: "D" }, { name: "Szkocja", groupName: "D" }, { name: "Australia", groupName: "D" }, { name: "Turcja", groupName: "D" },
-    { name: "Niemcy", groupName: "E" }, { name: "Curacao", groupName: "E" }, { name: "Holandia", groupName: "E" }, { name: "Japonia", groupName: "E" },
-    { name: "Wybrzeże Kości Słoniowej", groupName: "F" }, { name: "Ekwador", groupName: "F" }, { name: "Szwecja", groupName: "F" }, { name: "Tunezja", groupName: "F" },
-    { name: "Hiszpania", groupName: "G" }, { name: "Republika Zielonego Przylądka", groupName: "G" }, { name: "Belgia", groupName: "G" }, { name: "Egipt", groupName: "G" },
-    { name: "Arabia Saudyjska", groupName: "H" }, { name: "Urugwaj", groupName: "H" }, { name: "Iran", groupName: "H" }, { name: "Nowa Zelandia", groupName: "H" },
+    { name: "Kanada", groupName: "B" }, { name: "Bośnia i Hercegowina", groupName: "B" }, { name: "Katar", groupName: "B" }, { name: "Szwajcaria", groupName: "B" },
+    { name: "Brazylia", groupName: "C" }, { name: "Maroko", groupName: "C" }, { name: "Haiti", groupName: "C" }, { name: "Szkocja", groupName: "C" },
+    { name: "USA", groupName: "D" }, { name: "Paragwaj", groupName: "D" }, { name: "Australia", groupName: "D" }, { name: "Turcja", groupName: "D" },
+    { name: "Niemcy", groupName: "E" }, { name: "Curacao", groupName: "E" }, { name: "Wybrzeże Kości Słoniowej", groupName: "E" }, { name: "Ekwador", groupName: "E" },
+    { name: "Holandia", groupName: "F" }, { name: "Japonia", groupName: "F" }, { name: "Szwecja", groupName: "F" }, { name: "Tunezja", groupName: "F" },
+    { name: "Belgia", groupName: "G" }, { name: "Egipt", groupName: "G" }, { name: "Iran", groupName: "G" }, { name: "Nowa Zelandia", groupName: "G" },
+    { name: "Hiszpania", groupName: "H" }, { name: "Republika Zielonego Przylądka", groupName: "H" }, { name: "Arabia Saudyjska", groupName: "H" }, { name: "Urugwaj", groupName: "H" },
     { name: "Francja", groupName: "I" }, { name: "Senegal", groupName: "I" }, { name: "Irak", groupName: "I" }, { name: "Norwegia", groupName: "I" },
     { name: "Argentyna", groupName: "J" }, { name: "Algieria", groupName: "J" }, { name: "Austria", groupName: "J" }, { name: "Jordania", groupName: "J" },
-    { name: "Portugalia", groupName: "K" }, { name: "DR Konga", groupName: "K" }, { name: "Anglia", groupName: "K" }, { name: "Chorwacja", groupName: "K" },
-    { name: "Ghana", groupName: "L" }, { name: "Panama", groupName: "L" }, { name: "Uzbekistan", groupName: "L" }, { name: "Kolumbia", groupName: "L" }
+    { name: "Portugalia", groupName: "K" }, { name: "DR Konga", groupName: "K" }, { name: "Uzbekistan", groupName: "K" }, { name: "Kolumbia", groupName: "K" },
+    { name: "Anglia", groupName: "L" }, { name: "Chorwacja", groupName: "L" }, { name: "Ghana", groupName: "L" }, { name: "Panama", groupName: "L" }
   ];
 
   await prisma.team.deleteMany({});

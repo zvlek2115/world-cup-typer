@@ -5,13 +5,13 @@ import {
   saveGroupPredictions, 
   updateGroupResult 
 } from '../controllers/groupController';
-import { authenticateToken } from '../middleware/authMiddleware';
+import { authenticateJWT } from '../middleware/authMiddleware';
 
 const router = Router();
 
-router.get('/', authenticateToken, getTeamsByGroups);
-router.get('/me', authenticateToken, getMyGroupPredictions);
-router.post('/', authenticateToken, saveGroupPredictions);
-router.put('/result', authenticateToken, updateGroupResult);
+router.get('/', authenticateJWT, getTeamsByGroups);
+router.get('/me', authenticateJWT, getMyGroupPredictions);
+router.post('/', authenticateJWT, saveGroupPredictions);
+router.put('/result', authenticateJWT, updateGroupResult);
 
 export default router;

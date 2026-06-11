@@ -21,8 +21,8 @@ export const getLeaderboard = async (req: Request, res: Response) => {
     });
 
     const leaderboard = users.map(user => {
-      const matchPoints = user.predictions.reduce((acc, pred) => acc + (pred.pointsEarned || 0), 0);
-      const groupPoints = user.groupPredictions.reduce((acc, pred) => acc + (pred.pointsEarned || 0), 0);
+      const matchPoints = user.predictions.reduce((acc: number, pred: any) => acc + (pred.pointsEarned || 0), 0);
+      const groupPoints = (user as any).groupPredictions.reduce((acc: number, pred: any) => acc + (pred.pointsEarned || 0), 0);
       return {
         id: user.id,
         username: user.username,

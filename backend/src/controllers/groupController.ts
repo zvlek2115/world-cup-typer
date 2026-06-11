@@ -4,7 +4,7 @@ import { AuthRequest } from '../middleware/authMiddleware';
 
 export const getTeamsByGroups = async (req: AuthRequest, res: Response) => {
   try {
-    const teams = await prisma.team.findMany({
+    const teams = await (prisma as any).team.findMany({
       orderBy: [
         { groupName: 'asc' },
         { name: 'asc' }
@@ -12,7 +12,7 @@ export const getTeamsByGroups = async (req: AuthRequest, res: Response) => {
     });
     
     const groups: Record<string, any[]> = {};
-    teams.forEach(team => {
+    teams.forEach((team: any) => {
       if (!groups[team.groupName]) groups[team.groupName] = [];
       groups[team.groupName].push(team);
     });
@@ -25,8 +25,8 @@ export const getTeamsByGroups = async (req: AuthRequest, res: Response) => {
 
 export const getMyGroupPredictions = async (req: AuthRequest, res: Response) => {
   try {
-    const predictions = await prisma.groupPrediction.findMany({
-      where: { userId: req.user!.id }
+    const predictions = await (prisma as any).groupPrediction.findMany({
+      where: { userId: req.user!.userId }
     });
     res.json(predictions);
   } catch (error) {
@@ -38,10 +38,10 @@ export const saveGroupPredictions = async (req: AuthRequest, res: Response) => {
   const { predictions } = req.body; // Array of { groupName, teamName, predictedRank }
 
   try {
-    const userId = req.user!.id;
+    const userId = req.user!.userId;
 
     for (const pred of predictions) {
-      await prisma.groupPrediction.upsert({
+      await (prisma as any).groupPrediction.upsert({
         where: {
           userId_groupName_teamName: {
             userId,
@@ -77,19 +77,19 @@ export const updateGroupResult = async (req: AuthRequest, res: Response) => {
   try {
     for (const teamName in results) {
       const actualRank = results[teamName];
-      await prisma.team.update({
+      await (prisma as any).team.update({
         where: { name: teamName },
         data: { actualRank }
       });
 
       // Calculate points for all users for this team in this group
-      const predictions = await prisma.groupPrediction.findMany({
+      const predictions = await (prisma as any).groupPrediction.findMany({
         where: { groupName, teamName }
       });
 
       for (const pred of predictions) {
         const points = pred.predictedRank === actualRank ? 3 : 0;
-        await prisma.groupPrediction.update({
+        await (prisma as any).groupPrediction.update({
           where: { id: pred.id },
           data: { pointsEarned: points }
         });

@@ -5,7 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import { Trophy, UserCircle, Target, ArrowLeft, Save, CheckCircle2, Info } from 'lucide-react';
 
 const IndividualPredictions = () => {
-  const { user } = useAuth();
+  const { } = useAuth();
   const [teams, setTeams] = useState<any[]>([]);
   const [prediction, setPrediction] = useState({
     winner: '',

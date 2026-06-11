@@ -28,13 +28,13 @@ const AdminPanel = () => {
   const [loading, setLoading] = useState(true);
   const [editingScores, setEditingScores] = useState<Record<string, { home: string; away: string; status: string }>>({});
   const [groupResults, setGroupResults] = useState<Record<string, Record<string, string>>>({}); // groupName -> {teamName: rank}
+  const [individualResults, setIndividualResults] = useState({ winner: '', mvp: '', topScorer: '' });
   const [saving, setSaving] = useState<string | null>(null);
   const [savingGroup, setSavingGroup] = useState<string | null>(null);
+  const [savingIndiv, setSavingIndiv] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'matches' | 'groups' | 'individual'>('matches');
-  const [individualResults, setIndividualResults] = useState({ winner: '', mvp: '', topScorer: '' });
-  const [savingIndiv, setSavingIndiv] = useState(false);
   const [teamsList, setTeamsList] = useState<any[]>([]);
 
   useEffect(() => {
@@ -108,6 +108,51 @@ const AdminPanel = () => {
     }));
   };
 
+  const handleUpdateResult = async (matchId: string) => {
+    const edit = editingScores[matchId];
+    setSaving(matchId);
+    setError('');
+    setSuccess(null);
+
+    try {
+      await api.put(`/matches/${matchId}`, {
+        homeScore: edit.home === '' ? null : parseInt(edit.home),
+        awayScore: edit.away === '' ? null : parseInt(edit.away),
+        status: edit.status
+      });
+      setSuccess(matchId);
+      setTimeout(() => setSuccess(null), 3000);
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Błąd podczas aktualizacji wyniku');
+    } finally {
+      setSaving(null);
+    }
+  };
+
+  const handleUpdateGroupResult = async (groupName: string) => {
+    const results = groupResults[groupName];
+    setSavingGroup(groupName);
+    setError('');
+    setSuccess(null);
+
+    try {
+      const formattedResults: Record<string, number> = {};
+      for (const team in results) {
+        if (results[team] !== '') {
+          formattedResults[team] = parseInt(results[team]);
+        }
+      }
+
+      await api.put('/groups/result', { groupName, results: formattedResults });
+      setSuccess(`group-${groupName}`);
+      setTimeout(() => setSuccess(null), 3000);
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Błąd podczas aktualizacji grupy');
+    } finally {
+      setSavingGroup(null);
+    }
+  };
+
   const handleUpdateIndividualResults = async () => {
     setSavingIndiv(true);
     setError('');
@@ -138,10 +183,10 @@ const AdminPanel = () => {
           </div>
         </div>
 
-        <div className="flex space-x-4 mb-8">
+        <div className="flex space-x-4 mb-8 text-sm">
           <button
             onClick={() => setActiveTab('matches')}
-            className={`px-6 py-2 rounded-md font-bold transition-all ${
+            className={`px-4 py-2 rounded-md font-bold transition-all ${
               activeTab === 'matches' ? 'bg-red-600 text-white' : 'bg-slate-800 text-slate-400 hover:bg-slate-700'
             }`}
           >
@@ -149,7 +194,7 @@ const AdminPanel = () => {
           </button>
           <button
             onClick={() => setActiveTab('groups')}
-            className={`px-6 py-2 rounded-md font-bold transition-all ${
+            className={`px-4 py-2 rounded-md font-bold transition-all ${
               activeTab === 'groups' ? 'bg-red-600 text-white' : 'bg-slate-800 text-slate-400 hover:bg-slate-700'
             }`}
           >
@@ -157,7 +202,7 @@ const AdminPanel = () => {
           </button>
           <button
             onClick={() => setActiveTab('individual')}
-            className={`px-6 py-2 rounded-md font-bold transition-all ${
+            className={`px-4 py-2 rounded-md font-bold transition-all ${
               activeTab === 'individual' ? 'bg-red-600 text-white' : 'bg-slate-800 text-slate-400 hover:bg-slate-700'
             }`}
           >
@@ -361,53 +406,6 @@ const AdminPanel = () => {
                 UWAGA: TYLKO DLA ZYLEK. ROZLICZASZ CAŁY TURNIEJ NA RAZ.
               </p>
             </div>
-          </div>
-        )}
-            {Object.keys(groups).sort().map((gName) => {
-              const isSaving = savingGroup === gName;
-              const isSuccess = success === `group-${gName}`;
-              
-              return (
-                <div key={gName} className="bg-slate-800 rounded-lg border border-slate-700 overflow-hidden shadow-lg">
-                  <div className="bg-slate-700 p-3 flex justify-between items-center">
-                    <h3 className="font-bold flex items-center">
-                      <ListChecks className="w-4 h-4 mr-2 text-red-500" />
-                      GRUPA {gName}
-                    </h3>
-                    <button
-                      onClick={() => handleUpdateGroupResult(gName)}
-                      disabled={isSaving}
-                      className={`px-3 py-1 rounded text-xs font-bold transition-all ${
-                        isSuccess ? 'bg-green-600' : 'bg-red-600 hover:bg-red-700'
-                      }`}
-                    >
-                      {isSaving ? 'Zapisywanie...' : isSuccess ? 'Zapisano!' : 'Zapisz Wynik Grupy'}
-                    </button>
-                  </div>
-                  <div className="p-4 space-y-3">
-                    {groups[gName].map((team) => (
-                      <div key={team.id} className="flex items-center justify-between">
-                        <span className="text-sm font-semibold">{team.name}</span>
-                        <div className="flex items-center space-x-2">
-                          <span className="text-[10px] text-slate-500 uppercase font-bold">Miejsce:</span>
-                          <select
-                            value={groupResults[gName]?.[team.name] || ''}
-                            onChange={(e) => handleGroupResultChange(gName, team.name, e.target.value)}
-                            className="bg-slate-900 border border-slate-600 rounded px-2 py-1 text-xs font-bold focus:border-red-500 outline-none w-16"
-                          >
-                            <option value="">?</option>
-                            <option value="1">1</option>
-                            <option value="2">2</option>
-                            <option value="3">3</option>
-                            <option value="4">4</option>
-                          </select>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              );
-            })}
           </div>
         )}
       </div>

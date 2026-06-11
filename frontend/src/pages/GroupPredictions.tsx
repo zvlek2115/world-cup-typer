@@ -55,14 +55,60 @@ const GroupPredictions = () => {
   }, []);
 
   const handleRankChange = (teamName: string, rank: number) => {
-    setPredictions(prev => ({
-      ...prev,
-      [teamName]: rank
-    }));
+    // Find which group this team belongs to
+    let groupName = '';
+    for (const [gName, teams] of Object.entries(groups)) {
+      if (teams.some(t => t.name === teamName)) {
+        groupName = gName;
+        break;
+      }
+    }
+
+    // Check if another team in the SAME group already has this rank
+    const teamsInGroup = groups[groupName];
+    const teamWithSameRank = teamsInGroup.find(t => predictions[t.name] === rank && t.name !== teamName);
+
+    const newPredictions = { ...predictions };
+    
+    // Swap ranks if another team already had the selected rank
+    if (teamWithSameRank) {
+      const currentRankOfSelectedTeam = predictions[teamName];
+      if (currentRankOfSelectedTeam) {
+        newPredictions[teamWithSameRank.name] = currentRankOfSelectedTeam;
+      } else {
+        delete newPredictions[teamWithSameRank.name];
+      }
+    }
+
+    newPredictions[teamName] = rank;
+    setPredictions(newPredictions);
     setSuccess(false);
+    setError('');
+  };
+
+  const validatePredictions = () => {
+    for (const groupName in groups) {
+      const teamNames = groups[groupName].map(t => t.name);
+      const ranksInGroup = teamNames.map(name => predictions[name]).filter(r => r !== undefined);
+      const uniqueRanks = new Set(ranksInGroup);
+      
+      if (ranksInGroup.length < 4) {
+        return `Grupa ${groupName}: Wybierz miejsca dla wszystkich drużyn.`;
+      }
+      if (uniqueRanks.size !== 4) {
+        return `Grupa ${groupName}: Miejsca muszą być unikalne.`;
+      }
+    }
+    return null;
   };
 
   const handleSave = async () => {
+    const validationError = validatePredictions();
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
+
     setSaving(true);
     setError('');
     setSuccess(false);
@@ -104,9 +150,9 @@ const GroupPredictions = () => {
     <div className="min-h-screen bg-slate-900 text-white p-4 md:p-8 pb-24">
       <div className="max-w-6xl mx-auto">
         <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
-          <Link to="/" className="flex items-center text-slate-400 hover:text-white transition-colors">
+          <Link to="/groups" className="flex items-center text-slate-400 hover:text-white transition-colors">
             <ArrowLeft className="w-5 h-5 mr-2" />
-            Powrót do meczów
+            Powrót do tabel
           </Link>
           <div className="flex items-center">
             <ListChecks className="w-8 h-8 text-green-500 mr-3" />

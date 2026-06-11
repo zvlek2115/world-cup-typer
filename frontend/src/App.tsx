@@ -6,7 +6,9 @@ import Leaderboard from './pages/Leaderboard';
 import MyPredictions from './pages/MyPredictions';
 import OthersPredictions from './pages/OthersPredictions';
 import AdminPanel from './pages/AdminPanel';
+import Groups from './pages/Groups';
 import GroupPredictions from './pages/GroupPredictions';
+import OthersGroupPredictions from './pages/OthersGroupPredictions';
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { token, loading } = useAuth();
@@ -59,7 +61,23 @@ function App() {
             path="/groups" 
             element={
               <ProtectedRoute>
+                <Groups />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/groups/predict" 
+            element={
+              <ProtectedRoute>
                 <GroupPredictions />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/groups/all-predictions" 
+            element={
+              <ProtectedRoute>
+                <OthersGroupPredictions />
               </ProtectedRoute>
             } 
           />

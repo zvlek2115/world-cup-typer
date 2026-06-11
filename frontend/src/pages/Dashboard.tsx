@@ -125,7 +125,7 @@ const Dashboard = () => {
               className="flex items-center bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded-md transition-colors font-semibold text-sm"
             >
               <ListChecks className="w-4 h-4 mr-2" />
-              Typuj Grupy
+              Grupy
             </Link>
             <Link 
               to="/all-predictions"

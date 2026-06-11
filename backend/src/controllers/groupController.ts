@@ -101,3 +101,124 @@ export const updateGroupResult = async (req: AuthRequest, res: Response) => {
     res.status(500).json({ message: 'Error updating group results' });
   }
 };
+
+export const getGroupStandings = async (req: AuthRequest, res: Response) => {
+  try {
+    const teams = await (prisma as any).team.findMany();
+    const matches = await prisma.match.findMany({
+      where: { status: 'FINISHED' }
+    });
+
+    const standings: Record<string, any[]> = {};
+
+    // Initialize standings for each team
+    teams.forEach((team: any) => {
+      if (!standings[team.groupName]) standings[team.groupName] = [];
+      standings[team.groupName].push({
+        name: team.name,
+        played: 0,
+        won: 0,
+        drawn: 0,
+        lost: 0,
+        goalsFor: 0,
+        goalsAgainst: 0,
+        points: 0
+      });
+    });
+
+    // Calculate standings from matches
+    matches.forEach(match => {
+      if (match.homeScore === null || match.awayScore === null) return;
+
+      let homeTeamStats: any, awayTeamStats: any;
+      let groupName = '';
+
+      // Find teams in standings
+      for (const gName in standings) {
+        const home = standings[gName].find(t => t.name === match.homeTeam);
+        const away = standings[gName].find(t => t.name === match.awayTeam);
+        if (home && away) {
+          homeTeamStats = home;
+          awayTeamStats = away;
+          groupName = gName;
+          break;
+        }
+      }
+
+      if (!homeTeamStats || !awayTeamStats) return;
+
+      homeTeamStats.played++;
+      awayTeamStats.played++;
+      homeTeamStats.goalsFor += match.homeScore;
+      homeTeamStats.goalsAgainst += match.awayScore;
+      awayTeamStats.goalsFor += match.awayScore;
+      awayTeamStats.goalsAgainst += match.homeScore;
+
+      if (match.homeScore > match.awayScore) {
+        homeTeamStats.won++;
+        homeTeamStats.points += 3;
+        awayTeamStats.lost++;
+      } else if (match.homeScore < match.awayScore) {
+        awayTeamStats.won++;
+        awayTeamStats.points += 3;
+        homeTeamStats.lost++;
+      } else {
+        homeTeamStats.drawn++;
+        awayTeamStats.drawn++;
+        homeTeamStats.points += 1;
+        awayTeamStats.points += 1;
+      }
+    });
+
+    // Sort teams within each group
+    for (const groupName in standings) {
+      standings[groupName].sort((a, b) => {
+        if (b.points !== a.points) return b.points - a.points;
+        const aDiff = a.goalsFor - a.goalsAgainst;
+        const bDiff = b.goalsFor - b.goalsAgainst;
+        if (bDiff !== aDiff) return bDiff - aDiff;
+        return b.goalsFor - a.goalsFor;
+      });
+    }
+
+    res.json(standings);
+  } catch (error) {
+    res.status(500).json({ message: 'Error calculating standings' });
+  }
+};
+
+export const getAllGroupPredictions = async (req: AuthRequest, res: Response) => {
+  try {
+    const predictions = await (prisma as any).groupPrediction.findMany({
+      include: {
+        user: {
+          select: {
+            username: true
+          }
+        }
+      },
+      orderBy: [
+        { groupName: 'asc' },
+        { predictedRank: 'asc' }
+      ]
+    });
+
+    // Group by groupName, then by username
+    const formatted: Record<string, Record<string, any[]>> = {};
+
+    predictions.forEach((pred: any) => {
+      if (!formatted[pred.groupName]) formatted[pred.groupName] = {};
+      if (!formatted[pred.groupName][pred.user.username]) formatted[pred.groupName][pred.user.username] = [];
+      
+      formatted[pred.groupName][pred.user.username].push({
+        teamName: pred.teamName,
+        predictedRank: pred.predictedRank,
+        pointsEarned: pred.pointsEarned
+      });
+    });
+
+    res.json(formatted);
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching all group predictions' });
+  }
+};

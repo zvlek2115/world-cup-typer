@@ -1,0 +1,10 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const matchController_1 = require("../controllers/matchController");
+const authMiddleware_1 = require("../middleware/authMiddleware");
+const router = (0, express_1.Router)();
+router.get('/', matchController_1.getMatches);
+router.post('/', authMiddleware_1.authenticateJWT, authMiddleware_1.isAdmin, matchController_1.createMatch);
+router.put('/:id', authMiddleware_1.authenticateJWT, authMiddleware_1.isAdmin, matchController_1.updateMatchResult);
+exports.default = router;

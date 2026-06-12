@@ -112,23 +112,28 @@ async function main() {
   ];
 
   for (const matchData of matches) {
-    await (prisma as any).match.upsert({
+    const existingMatch = await prisma.match.findFirst({
       where: {
-        id: (await prisma.match.findFirst({
-          where: {
-            homeTeam: matchData.homeTeam,
-            awayTeam: matchData.awayTeam,
-            startTime: matchData.startTime
-          }
-        }))?.id || 'new-match'
-      },
-      update: {
-        homeScore: matchData.homeScore,
-        awayScore: matchData.awayScore,
-        status: (matchData as any).status || 'SCHEDULED'
-      },
-      create: matchData as any
+        homeTeam: matchData.homeTeam,
+        awayTeam: matchData.awayTeam,
+        startTime: matchData.startTime
+      }
     });
+
+    if (existingMatch) {
+      await prisma.match.update({
+        where: { id: existingMatch.id },
+        data: {
+          homeScore: matchData.homeScore,
+          awayScore: matchData.awayScore,
+          status: (matchData as any).status || 'SCHEDULED'
+        }
+      });
+    } else {
+      await prisma.match.create({
+        data: matchData as any
+      });
+    }
   }
 
   console.log(`Seed: Matches synchronized. Results updated.`);

@@ -1,0 +1,12 @@
+{
+  "$schema": "https://railway.app/static/railway-conf.schema.json",
+  "build": {
+    "builder": "NIXPACKS",
+    "rootDirectory": "backend"
+  },
+  "deploy": {
+    "startCommand": "node dist/index.js",
+    "healthCheckPath": "/health",
+    "healthCheckTimeout": 120
+  }
+}

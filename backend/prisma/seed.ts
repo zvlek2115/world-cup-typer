@@ -59,8 +59,8 @@ async function main() {
   console.log(`Seed: Synchronized ${teams.length} teams`);
 
   const matches = [
-    { "homeTeam": "Meksyk", "awayTeam": "RPA", "startTime": new Date("2026-06-11T19:00:00Z") },
-    { "homeTeam": "Korea Południowa", "awayTeam": "Czechy", "startTime": new Date("2026-06-12T02:00:00Z") },
+    { "homeTeam": "Meksyk", "awayTeam": "RPA", "startTime": new Date("2026-06-11T19:00:00Z"), "homeScore": 2, "awayScore": 0, "status": "FINISHED" },
+    { "homeTeam": "Korea Południowa", "awayTeam": "Czechy", "startTime": new Date("2026-06-12T02:00:00Z"), "homeScore": 2, "awayScore": 1, "status": "FINISHED" },
     { "homeTeam": "Kanada", "awayTeam": "Bośnia i Hercegowina", "startTime": new Date("2026-06-12T19:00:00Z") },
     { "homeTeam": "USA", "awayTeam": "Paragwaj", "startTime": new Date("2026-06-13T01:00:00Z") },
     { "homeTeam": "Katar", "awayTeam": "Szwajcaria", "startTime": new Date("2026-06-13T19:00:00Z") },
@@ -112,22 +112,123 @@ async function main() {
   ];
 
   for (const matchData of matches) {
-    const existingMatch = await prisma.match.findFirst({
+    await (prisma as any).match.upsert({
       where: {
-        homeTeam: matchData.homeTeam,
-        awayTeam: matchData.awayTeam,
-        startTime: matchData.startTime
+        id: (await prisma.match.findFirst({
+          where: {
+            homeTeam: matchData.homeTeam,
+            awayTeam: matchData.awayTeam,
+            startTime: matchData.startTime
+          }
+        }))?.id || 'new-match'
+      },
+      update: {
+        homeScore: matchData.homeScore,
+        awayScore: matchData.awayScore,
+        status: (matchData as any).status || 'SCHEDULED'
+      },
+      create: matchData as any
+    });
+  }
+
+  console.log(`Seed: Matches synchronized. Results updated.`);
+
+  // User Predictions Data
+  const userPredictions = [
+    {
+      username: "Twojamamaunasjest",
+      predictions: [
+        { homeTeam: "Meksyk", awayTeam: "RPA", homeScore: 2, awayScore: 1 },
+        { homeTeam: "Korea Południowa", awayTeam: "Czechy", homeScore: 1, awayScore: 1 }
+      ]
+    },
+    {
+      username: "gregor_samsa",
+      predictions: [
+        { homeTeam: "Meksyk", awayTeam: "RPA", homeScore: 3, awayScore: 1 },
+        { homeTeam: "Korea Południowa", awayTeam: "Czechy", homeScore: 0, awayScore: 1 }
+      ]
+    },
+    {
+      username: "Mateusz",
+      predictions: [
+        { homeTeam: "Meksyk", awayTeam: "RPA", homeScore: 2, awayScore: 0 },
+        { homeTeam: "Korea Południowa", awayTeam: "Czechy", homeScore: 1, awayScore: 2 }
+      ]
+    },
+    {
+      username: "zylek",
+      predictions: [
+        { homeTeam: "Meksyk", awayTeam: "RPA", homeScore: 2, awayScore: 0 },
+        { homeTeam: "Korea Południowa", awayTeam: "Czechy", homeScore: 1, awayScore: 1 }
+      ]
+    },
+    {
+      username: "Xynia",
+      predictions: [
+        { homeTeam: "Meksyk", awayTeam: "RPA", homeScore: 1, awayScore: 1 },
+        { homeTeam: "Korea Południowa", awayTeam: "Czechy", homeScore: 1, awayScore: 3 }
+      ]
+    }
+  ];
+
+  const defaultPassword = await bcrypt.hash('password123', 10);
+
+  for (const userData of userPredictions) {
+    const user = await prisma.user.upsert({
+      where: { username: userData.username },
+      update: {},
+      create: {
+        username: userData.username,
+        passwordHash: defaultPassword,
+        role: Role.USER
       }
     });
 
-    if (!existingMatch) {
-      await prisma.match.create({
-        data: matchData
+    for (const pred of userData.predictions) {
+      const match = await prisma.match.findFirst({
+        where: { homeTeam: pred.homeTeam, awayTeam: pred.awayTeam }
       });
+
+      if (match) {
+        let points = 0;
+        if (match.status === 'FINISHED' && match.homeScore !== null && match.awayScore !== null) {
+          if (pred.homeScore === match.homeScore && pred.awayScore === match.awayScore) {
+            points = 3;
+          } else {
+            const actualDiff = match.homeScore - match.awayScore;
+            const predDiff = pred.homeScore - pred.awayScore;
+            if ((actualDiff > 0 && predDiff > 0) || (actualDiff < 0 && predDiff < 0) || (actualDiff === 0 && predDiff === 0)) {
+              points = 1;
+            }
+          }
+        }
+
+        await prisma.prediction.upsert({
+          where: {
+            userId_matchId: {
+              userId: user.id,
+              matchId: match.id
+            }
+          },
+          update: {
+            predictedHomeScore: pred.homeScore,
+            predictedAwayScore: pred.awayScore,
+            pointsEarned: points
+          },
+          create: {
+            userId: user.id,
+            matchId: match.id,
+            predictedHomeScore: pred.homeScore,
+            predictedAwayScore: pred.awayScore,
+            pointsEarned: points
+          }
+        });
+      }
     }
   }
 
-  console.log(`Seed: Matches synchronized. Existing data preserved.`);
+  console.log(`Seed: User predictions and points updated.`);
 }
 
 main()

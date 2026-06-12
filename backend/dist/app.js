@@ -10,6 +10,8 @@ const authRoutes_1 = __importDefault(require("./routes/authRoutes"));
 const matchRoutes_1 = __importDefault(require("./routes/matchRoutes"));
 const predictionRoutes_1 = __importDefault(require("./routes/predictionRoutes"));
 const leaderboardRoutes_1 = __importDefault(require("./routes/leaderboardRoutes"));
+const groupRoutes_1 = __importDefault(require("./routes/groupRoutes"));
+const individualRoutes_1 = __importDefault(require("./routes/individualRoutes"));
 dotenv_1.default.config();
 const app = (0, express_1.default)();
 app.use((0, cors_1.default)());
@@ -19,6 +21,8 @@ app.use('/api/auth', authRoutes_1.default);
 app.use('/api/matches', matchRoutes_1.default);
 app.use('/api/predictions', predictionRoutes_1.default);
 app.use('/api/leaderboard', leaderboardRoutes_1.default);
+app.use('/api/groups', groupRoutes_1.default);
+app.use('/api/individual', individualRoutes_1.default);
 // Basic health check
 app.get('/health', (req, res) => {
     res.json({ status: 'ok' });

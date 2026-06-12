@@ -25,6 +25,10 @@ app.use('/api/groups', groupRoutes);
 app.use('/api/individual', individualRoutes);
 
 // Basic health check
+app.get('/', (req, res) => {
+  res.json({ status: 'ok', message: 'World Cup Typer API' });
+});
+
 app.get('/health', (req, res) => {
   res.json({ status: 'ok' });
 });

@@ -6,5 +6,6 @@ const authMiddleware_1 = require("../middleware/authMiddleware");
 const router = (0, express_1.Router)();
 router.use(authMiddleware_1.authenticateJWT);
 router.get('/me', predictionController_1.getMyPredictions);
+router.get('/all', predictionController_1.getAllPredictions);
 router.post('/', predictionController_1.upsertPrediction);
 exports.default = router;

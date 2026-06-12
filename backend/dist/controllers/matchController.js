@@ -50,8 +50,15 @@ const updateMatchResult = async (req, res) => {
                 status,
             },
         });
-        if (status === 'FINISHED') {
+        if (status === 'FINISHED' && homeScore !== null && awayScore !== null) {
             await calculatePointsForMatch(id, homeScore, awayScore);
+        }
+        else {
+            // If match is not finished or scores are cleared, reset points to null
+            await prisma_1.default.prediction.updateMany({
+                where: { matchId: id },
+                data: { pointsEarned: null },
+            });
         }
         res.json(match);
     }
